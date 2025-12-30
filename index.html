@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>SHΔDØW V64 | GitHub Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-[#05070a] text-white font-mono p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between border-b border-[#00ffcc]/20 pb-6 mb-8">
+            <h1 class="text-3xl font-black italic">SHΔDØW <span class="text-[#00ffcc]">V64</span></h1>
+            <div id="counter-box" class="bg-white/5 p-4 rounded-lg border-t-2 border-[#00ffcc]">
+                <span id="total-count" class="text-2xl font-bold text-[#00ffcc]">0</span>
+                <p class="text-[10px] opacity-50 uppercase">Total Records</p>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <aside class="space-y-4">
+                <div class="bg-white/5 p-6 rounded-xl border border-white/10 space-y-4">
+                    <label class="block w-full bg-[#00ffcc] text-black text-center py-3 rounded font-bold cursor-pointer hover:bg-white transition">
+                        📂 استيراد الملفات
+                        <input type="file" id="fileInput" multiple class="hidden">
+                    </label>
+                    <button id="btnStats" class="w-full py-2 border border-white/20 rounded hover:bg-[#00ffcc]/10">📊 إحصائيات</button>
+                    <button id="btnClear" class="w-full py-2 text-red-500 text-xs opacity-60 hover:opacity-100">🧹 مسح البيانات</button>
+                </div>
+                <div id="terminal" class="h-64 bg-black p-4 text-[10px] text-[#00ffcc] overflow-y-auto border border-white/5 rounded">
+                    [SYSTEM] Ready for deployment on GitHub.
+                </div>
+            </aside>
+
+            <main class="lg:col-span-3 bg-white/5 rounded-xl p-6 min-h-[500px]">
+                <div id="display-area" class="h-full overflow-y-auto space-y-2 text-xs">
+                    </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // تهيئة الـ Worker من ملف خارجي (الطريقة الصحيحة لـ GitHub)
+        const worker = new Worker('worker.js');
+        let db;
+
+        const UI = {
+            log: (msg) => {
+                const t = document.getElementById('terminal');
+                t.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+                t.scrollTop = t.scrollHeight;
+            },
+            updateCount: (c) => document.getElementById('total-count').innerText = c.toLocaleString()
+        };
+
+        const req = indexedDB.open("SHADOW_ENGINE", 4);
+        req.onsuccess = (e) => { 
+            db = e.target.result;
+            const tx = db.transaction("vault", "readonly");
+            tx.objectStore("vault").count().onsuccess = (ev) => UI.updateCount(ev.target.result);
+        };
+
+        document.getElementById('fileInput').onchange = (e) => {
+            for (const file of e.target.files) {
+                UI.log(`بدء معالجة: ${file.name}`);
+                worker.postMessage({ file });
+            }
+        };
+
+        worker.onmessage = (e) => {
+            if (e.data.type === 'PROGRESS' || e.data.type === 'COMPLETE') {
+                const tx = db.transaction("vault", "readonly");
+                tx.objectStore("vault").count().onsuccess = (ev) => UI.updateCount(ev.target.result);
+                if(e.data.type === 'COMPLETE') UI.log("اكتملت المعالجة.");
+            }
+        };
+
+        document.getElementById('btnStats').onclick = async () => {
+            UI.log("جاري تحليل النطاقات...");
+            const stats = { total: 0, domains: {} };
+            const tx = db.transaction("vault", "readonly");
+            tx.objectStore("vault").openCursor().onsuccess = e => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    stats.total++;
+                    const d = cursor.value.domain;
+                    stats.domains[d] = (stats.domains[d] || 0) + 1;
+                    cursor.continue();
+                } else {
+                    renderAnalytics(stats);
+                }
+            };
+        };
+
+        function renderAnalytics(data) {
+            const top10 = Object.entries(data.domains).sort((a,b) => b[1]-a[1]).slice(0, 10);
+            let html = `<div class="grid grid-cols-1 gap-2">`;
+            top10.forEach(([name, count]) => {
+                html += `<div class="p-3 bg-white/5 flex justify-between"><span>${name}</span><span class="text-[#00ffcc]">${count}</span></div>`;
+            });
+            document.getElementById('display-area').innerHTML = html + `</div>`;
+        }
+
+        document.getElementById('btnClear').onclick = () => {
+            db.transaction("vault", "readwrite").objectStore("vault").clear().onsuccess = () => {
+                UI.updateCount(0);
+                UI.log("تم تصفير قاعدة البيانات.");
+            }
+        };
+    </script>
+</body>
+</html>
