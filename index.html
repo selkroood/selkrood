@@ -28,31 +28,43 @@
         <section class="control-panel">
             <div class="upload-zone" id="drop-zone">
                 <input type="file" id="file-input" multiple>
-                <div class="upload-content"><h3>DRAG DATASET</h3></div>
+                <div class="upload-content">
+                    <span class="icon">⚡</span>
+                    <h3>DRAG DATASET HERE</h3>
+                </div>
             </div>
             
             <div class="actions">
                 <button id="btn-process" class="cy-btn" disabled>INITIATE SEQUENCE</button>
                 <button id="btn-stop" class="cy-btn danger" disabled>ABORT</button>
+                <button id="btn-export-json" class="cy-btn alt">EXPORT JSON</button>
+                <button id="btn-export-csv" class="cy-btn alt">EXPORT CSV</button>
                 <button id="btn-clear" class="cy-btn warning">PURGE DB</button>
                 
-                <div class="smart-protocol" style="margin-top: 20px; border-top: 1px solid var(--secondary); padding-top: 15px;">
-                    <h4 style="color: var(--warning); font-family: var(--font-head); font-size: 0.7rem; margin-bottom: 10px;">SMART COPY SYSTEM</h4>
-                    <input type="text" id="domain-input" placeholder="DOMAIN (e.g. gmail.com)" 
-                           style="width: 100%; background: #000; border: 1px solid var(--secondary); color: var(--primary); padding: 8px; margin-bottom: 10px; font-family: var(--font-mono);">
-                    <button id="btn-copy-filtered" class="cy-btn alt" style="font-size: 0.7rem; margin-bottom: 5px; width: 100%;">COPY BY DOMAIN</button>
+                <div class="smart-protocol" style="border-top: 1px solid var(--secondary); margin-top: 15px; padding-top: 15px;">
+                    <h3 style="font-size: 0.8rem; color: var(--warning); margin-bottom: 10px; font-family: var(--font-head);">SMART COPY PROTOCOL</h3>
+                    <input type="text" id="domain-filter-input" placeholder="ENTER DOMAIN (e.g. gmail.com)" 
+                           style="width: 100%; background: #000; border: 1px solid var(--secondary); color: var(--primary); padding: 8px; margin-bottom: 10px; font-family: var(--font-mono); outline: none;">
+                    <button id="btn-copy-filtered" class="cy-btn alt" style="font-size: 0.7rem; width: 100%; margin-bottom: 5px;">COPY MATCHING EMAILS</button>
                     <button id="btn-copy-unique" class="cy-btn" style="font-size: 0.7rem; width: 100%; border-color: var(--warning); color: var(--warning);">COPY ALL UNIQUE DOMAINS</button>
                 </div>
             </div>
         </section>
 
         <section class="monitor">
-            <div class="monitor-header"><h2>LIVE STREAM</h2></div>
+            <div class="monitor-header">
+                <h2>LIVE DATA STREAM</h2>
+                <div class="filters">
+                    <input type="text" id="search-input" placeholder="FILTER QUERY...">
+                </div>
+            </div>
             <div class="terminal-window">
                 <div class="terminal-header">
                     <span>ID</span><span>TYPE</span><span>CONTENT</span><span>METADATA</span><span>SEC</span>
                 </div>
-                <div id="data-output" class="terminal-body"></div>
+                <div id="data-output" class="terminal-body">
+                    <div class="placeholder-text">WAITING FOR INPUT...</div>
+                </div>
             </div>
             <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
         </section>
